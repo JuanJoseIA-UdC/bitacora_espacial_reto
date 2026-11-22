@@ -1,122 +1,161 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import NoticiaCard from "./components/NoticiaCard/NoticiaCard";
+import "./App.css";
+import "./styles/tokens.css"
+
+const VITE_API_URL = import.meta.env.VITE_API_URL;
 
 function App() {
-  const [count, setCount] = useState(0)
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    const [noticias, setNoticias] = useState([]);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState(null);
+    const [termino, setTermino] = useState("");
+    const [busqueda, setBusqueda] = useState("");
 
-      <div className="ticks"></div>
+    function buscar(evento) {
+        evento.preventDefault();
+        setTermino(busqueda.trim());
+    }
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+    function verTodas() {
+        setBusqueda("");
+        setTermino("");
+    }
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    useEffect(() => {
+        const controlador = new AbortController();
+
+        async function cargarNoticias() {
+            setCargando(true);
+            setError(null);
+            setNoticias([]);
+
+            const parametros = new URLSearchParams({
+                limit: "12"
+            });
+
+            if (termino) {
+                parametros.set("search", termino);
+            }
+
+            try {
+                const respuesta = await fetch(
+                    `${VITE_API_URL}/articles/?${parametros.toString()}`,
+                    { signal: controlador.signal }
+                );
+
+                if (!respuesta.ok) {
+                    throw new Error("Error al obtener las noticias.");
+                }
+
+                const datos = await respuesta.json();
+
+                if (!controlador.signal.aborted) {
+                    setNoticias(datos.results);
+                }
+            } catch (errorPeticion) {
+                if (!controlador.signal.aborted) {
+                    setError(errorPeticion.message)
+                }
+            } finally {
+                if (!controlador.signal.aborted) {
+                    setCargando(false)
+                }
+            }
+        }
+        cargarNoticias();
+        return () => controlador.abort();
+
+    }, [termino]);
+
+    return (
+        <>
+            <header className="contenedor cabecera">
+                <a className="marca" href="#inicio">Bitácora Espacial</a>
+                <nav aria-label="Principal">
+                    <a href="#noticias">Noticias</a>
+                    <a href="#acerca">Acerca de esta demo</a>
+                </nav>
+            </header>
+
+            <main className="contenedor" id="inicio">
+                <h1>Explora las noticias del espacio</h1>
+                <p className="introduccion">Misiones, descubrimientos y próximos destinos. Encuentra un tema y sigue explorando.</p>
+                <form className="buscador" role="search" onSubmit={buscar}>
+                    <label htmlFor="busqueda">Buscar por tema</label>
+                    <div className="buscador__controles">
+                        <input
+                            type="search"
+                            id="busqueda"
+                            name="q"
+                            placeholder="Ej.:Mars, Artemis, SpaceX"
+                            value={busqueda}
+                            onChange={(evento) =>
+                                setBusqueda(evento.target.value)
+                            } />
+                        <button type="submit">Buscar</button>
+                        {termino && (
+                            <button type="button" onClick={verTodas}>
+                                Ver todas
+                            </button>
+                        )}
+                    </div>
+                </form>
+
+                <section aria-labelledby="titulo-noticias" id="noticicas">
+                    <div className="resultador-cabecera">
+                        <h2 id="titulo-noticias">Últimas noticias de la muestra</h2>
+                        <p role="status"></p>
+                    </div>
+
+                    {cargando && (
+                        <p role="status">
+                            Cargando noticias...
+                        </p>
+                    )}
+
+                    {error && (
+                        <p role="alert">
+                            {error}
+                        </p>
+                    )}
+
+                    {!cargando &&
+                        !error &&
+                        noticias.length === 0 &&
+                        termino && (
+                            <p role="status">
+                                No hay noticias para "{termino}".
+                            </p>
+                        )
+
+                    }
+
+                    <div className="grid-noticias">
+                        {!cargando && !error &&
+                            noticias.map((noticia) => (
+                                <NoticiaCard
+                                    key={noticia.id}
+                                    titulo={noticia.title}
+                                    resumen={noticia.summary}
+                                    imagen={noticia.image_url}
+                                    fuente={noticia.news_site}
+                                    fecha={noticia.published_at}
+                                    enlace={noticia.url}
+                                />
+                            ))
+                        }
+                    </div>
+                </section>
+            </main>
+
+            <footer className="contenedor">
+                <p>Datos proporcionados por Spaceflight News API</p>
+            </footer>
+        </>
+    );
 }
 
-export default App
+export default App;
+

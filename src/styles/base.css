@@ -1,0 +1,45 @@
+/* 1. Declarar el orden de las capas */
+@layer reset, base, componentes;
+
+/* 2. Capa de reinicio */
+@layer reset {
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+  }
+}
+
+/* 3. Estilos generales */
+@layer base {
+  body {
+    font-size: var(--texto-base);
+    line-height: 1.6;
+    color: var(--color-texto);
+    background-color: var(--color-fondo);
+    min-height: 100dvh;
+    padding: var(--espacio-4);
+    font-family: var(--fuente-base);
+  }
+
+  /* Título adaptable */
+  h1 {
+    font-size: clamp(2rem, 5vw, 4rem);
+  }
+
+  /* Ancho cómodo para leer */
+  p {
+    max-width: 65ch;
+  }
+
+  /* Foco visible para accesibilidad */
+  :focus-visible {
+    outline: 3px solid var(--color-acento);
+    outline-offset: 3px;
+  }
+}
