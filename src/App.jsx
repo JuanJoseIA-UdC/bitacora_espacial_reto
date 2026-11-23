@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import NoticiaCard from "./components/NoticiaCard/NoticiaCard.jsx";
 
 export default function App() {
+  const [termino, setTermino] = useState("");
   const [noticias, setNoticias] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
@@ -27,7 +28,7 @@ export default function App() {
           throw new Error(
             "Falta VITE_API_URL. Configura el archivo .env y reinicia Vite.",
           );
-        const parametros = new URLSearchParams({ limit: "12" });
+        const parametros = new URLSearchParams({ limit: "12", search: termino });
         const respuesta = await fetch(`${api}/articles/?${parametros}`, {
           signal: controlador.signal,
         });
@@ -56,7 +57,13 @@ export default function App() {
       controlador.abort();
       clearTimeout(tiempoLimite);
     };
-  }, []);
+  }, [termino]);
+
+  function buscar(evento) {
+    evento.preventDefault();
+    const formulario = new FormData(evento.currentTarget);
+    setTermino(String(formulario.get("q") ?? "").trim());
+  }
 
   return (
     <>
@@ -85,8 +92,26 @@ export default function App() {
           Misiones, descubrimientos y próximos destinos. Busca un tema y abre la noticia
           original para conocer más.
         </p>
+        <form className="buscador" role="search" onSubmit={buscar}>
+          <label htmlFor="busqueda">Buscar por tema</label>
+          <div className="buscador__campos">
+            <input
+              id="busqueda"
+              name="q"
+              type="search"
+              placeholder="Ej.: Mars, Artemis, SpaceX"
+              aria-describedby="ayuda-busqueda"
+            />
+            <button type="submit">Buscar</button>
+          </div>
+          <p id="ayuda-busqueda">
+            Deja el campo vacío y pulsa Buscar para volver a las últimas noticias.
+          </p>
+        </form>
         <section id="noticias" aria-labelledby="titulo-noticias" aria-busy={cargando}>
-          <h2 id="titulo-noticias">Últimas noticias</h2>
+          <h2 id="titulo-noticias">
+            {termino ? `Resultados para “${termino}”` : "Últimas noticias"}
+          </h2>
           {cargando && (
             <p className="estado" role="status">
               Cargando noticias…
@@ -102,7 +127,7 @@ export default function App() {
           )}
           {!cargando && !error && noticias.length === 0 && (
             <p className="estado" role="status">
-              No hay noticias disponibles.
+              No hay noticias para "{termino}".
             </p>
           )}
           {!cargando && !error && noticias.length > 0 && (
