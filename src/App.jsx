@@ -10,9 +10,12 @@ export default function App() {
   useEffect(() => {
     const controlador = new AbortController();
     const api = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "");
-    setCargando(true);
-    setError("");
-    setNoticias([]);
+    queueMicrotask(() => {
+      if (controlador.signal.aborted) return;
+      setCargando(true);
+      setError("");
+      setNoticias([]);
+    });
 
     const tiempoLimite = setTimeout(() => {
       setError(

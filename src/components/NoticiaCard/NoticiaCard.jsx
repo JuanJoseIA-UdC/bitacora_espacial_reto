@@ -7,6 +7,9 @@ export default function NoticiaCard({
   fuente,
   fecha,
   enlace,
+  textoAccion,
+  onAccion,
+  deshabilitada = false,
 }) {
   const fechaFormateada = new Intl.DateTimeFormat("es-CO", {
     dateStyle: "medium",
@@ -14,7 +17,12 @@ export default function NoticiaCard({
 
   return (
     <article className="noticia-card">
-      <img className="noticia-card__imagen" src={imagen} alt="" loading="lazy" />
+      <img
+        className="noticia-card__imagen"
+        src={imagen}
+        alt=""
+        loading="lazy"
+      />
       <h3 className="noticia-card__titulo">{titulo}</h3>
       <p className="noticia-card__resumen">{resumen}</p>
       <p className="noticia-card__meta">
@@ -29,6 +37,16 @@ export default function NoticiaCard({
       >
         Leer noticia
       </a>
+      {onAccion && (
+        <button
+          type="button"
+          disabled={deshabilitada}
+          onClick={onAccion}
+          aria-label={`${textoAccion}: ${titulo}`}
+        >
+          {textoAccion}
+        </button>
+      )}
     </article>
   );
 }
