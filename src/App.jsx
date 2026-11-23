@@ -28,7 +28,10 @@ export default function App() {
           throw new Error(
             "Falta VITE_API_URL. Configura el archivo .env y reinicia Vite.",
           );
-        const parametros = new URLSearchParams({ limit: "12", search: termino });
+        const parametros = new URLSearchParams({
+          limit: "12",
+          search: termino,
+        });
         const respuesta = await fetch(`${api}/articles/?${parametros}`, {
           signal: controlador.signal,
         });
@@ -43,7 +46,9 @@ export default function App() {
       } catch (causa) {
         if (!controlador.signal.aborted) {
           setError(
-            causa instanceof Error ? causa.message : "No se pudo conectar con la API.",
+            causa instanceof Error
+              ? causa.message
+              : "No se pudo conectar con la API.",
           );
         }
       } finally {
@@ -89,8 +94,8 @@ export default function App() {
       <main className="contenedor" id="contenido">
         <h1>Explora las noticias del espacio</h1>
         <p className="introduccion">
-          Misiones, descubrimientos y próximos destinos. Busca un tema y abre la noticia
-          original para conocer más.
+          Misiones, descubrimientos y próximos destinos. Busca un tema y abre la
+          noticia original para conocer más.
         </p>
         <form className="buscador" role="search" onSubmit={buscar}>
           <label htmlFor="busqueda">Buscar por tema</label>
@@ -105,10 +110,15 @@ export default function App() {
             <button type="submit">Buscar</button>
           </div>
           <p id="ayuda-busqueda">
-            Deja el campo vacío y pulsa Buscar para volver a las últimas noticias.
+            Deja el campo vacío y pulsa Buscar para volver a las últimas
+            noticias.
           </p>
         </form>
-        <section id="noticias" aria-labelledby="titulo-noticias" aria-busy={cargando}>
+        <section
+          id="noticias"
+          aria-labelledby="titulo-noticias"
+          aria-busy={cargando}
+        >
           <h2 id="titulo-noticias">
             {termino ? `Resultados para “${termino}”` : "Últimas noticias"}
           </h2>
@@ -136,11 +146,18 @@ export default function App() {
             </p>
           )}
           {!cargando && !error && noticias.length > 0 && (
-            <ListaNoticias
-              key={termino}
-              noticias={noticias}
-              titulo="Explora esta selección"
-            />
+            <>
+              <ListaNoticias
+                key={`todas-${termino}`}
+                noticias={noticias}
+                titulo="Todas las noticias cargadas"
+              />
+              <ListaNoticias
+                key={`seleccion-${termino}`}
+                noticias={noticias.slice(0, 3)}
+                titulo="Selección de tres noticias"
+              />
+            </>
           )}
         </section>
       </main>
@@ -155,8 +172,8 @@ export default function App() {
           >
             Spaceflight News API
           </a>
-          . Los textos conservan el idioma de su fuente y las noticias cambian con el
-          tiempo.
+          . Los textos conservan el idioma de su fuente y las noticias cambian
+          con el tiempo.
         </p>
       </footer>
     </>
