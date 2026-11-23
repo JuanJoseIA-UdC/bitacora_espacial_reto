@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import NoticiaCard from "./components/NoticiaCard/NoticiaCard.jsx";
+import ListaNoticias from "./components/ListaNoticias/ListaNoticias.jsx";
 
 export default function App() {
   const [termino, setTermino] = useState("");
@@ -135,19 +135,13 @@ export default function App() {
               Mostrando {noticias.length} noticias, hasta 12 por búsqueda.
             </p>
           )}
-          <div className="grid-noticias">
-            {noticias.map((noticia) => (
-              <NoticiaCard
-                key={noticia.id}
-                titulo={noticia.title}
-                resumen={noticia.summary}
-                imagen={noticia.image_url}
-                fuente={noticia.news_site}
-                fecha={noticia.published_at}
-                enlace={noticia.url}
-              />
-            ))}
-          </div>
+          {!cargando && !error && noticias.length > 0 && (
+            <ListaNoticias
+              key={termino}
+              noticias={noticias}
+              titulo="Explora esta selección"
+            />
+          )}
         </section>
       </main>
       <footer className="contenedor" id="acerca">
